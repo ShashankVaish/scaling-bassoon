@@ -1,9 +1,10 @@
 import express from "express";
-import { addExperince } from "../controllers/experience.controller.js";
+import { addExperince,getExperince_detail,getExperince } from "../controllers/experience.controller.js";
 
 const router = express.Router();
 
-// Create a new experience
 router.post("/add-experince", addExperince);
+router.get('/get-experince-detail',getExperince_detail)
+router.get('/get-experince',getExperince)
 
 export default router;

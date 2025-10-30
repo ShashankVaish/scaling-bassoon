@@ -1,35 +1,53 @@
 import mongoose from "mongoose";
 
-const experiencesSchema = new mongoose.Schema(
+const experienceSchema = new mongoose.Schema(
   {
+    id:{
+        type:Number,
+        unique:true,
+        required:true
+    },
     title: {
       type: String,
-      required: [true, "Activity title is required"],
+      required: true,
       trim: true,
     },
     location: {
       type: String,
-      required: [true, "Location is required"],
+      required: true,
+      trim: true,
     },
     description: {
       type: String,
-      required: [true, "Description is required"],
+      required: true,
     },
     price: {
       type: Number,
-      required: [true, "Price is required"],
-      min: [0, "Price cannot be negative"],
+      required: true,
+      min: 0,
     },
     imageUrl: {
       type: String,
-      default: "https://placehold.co/400x300/cccccc/white?text=Activity",
+      required: true,
+    },
+    availableDates: [
+      {
+        type: Date,
+      },
+    ],
+    availableTimes: [
+      {
+        time: { type: String },
+        slotsLeft: { type: Number, default: 0 },
+        soldOut: { type: Boolean, default: false },
+      },
+    ],
+    about: {
+      type: String,
+      default: "",
     },
   },
-  {
-    timestamps: true, // adds createdAt & updatedAt
-  }
+  { timestamps: true }
 );
-
-const Experiences = mongoose.model("Experiences", experiencesSchema);
-
-export default Experiences;
+const Experience = mongoose.model("Experience", experienceSchema);
+export default Experience;
