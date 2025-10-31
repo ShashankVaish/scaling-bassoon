@@ -3,32 +3,37 @@ import { createRoot } from 'react-dom/client'
 import {
   createBrowserRouter,
   RouterProvider,
-} from "react-router-dom"; // 1. Import router tools
+} from "react-router-dom"; 
 
 import './index.css'
 import App from './App.tsx'
-import ExperiencePage from './pages/ExperiencePage.tsx'; // 2. Import your pages
+import ExperiencePage from './pages/ExperiencePage.tsx'; 
 import ExperienceDetailPage from './pages/ExperienceDetailPage.tsx';
+import BookingPage from './pages/BookingPage.tsx'; // 1. Import the new page
 
-// 3. Define your app's routes
+// 2. Define your app's routes
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />, // <App /> is the layout (Header, etc.)
+    element: <App />, 
     children: [
       {
-        path: "/", // Homepage
+        path: "/", 
         element: <ExperiencePage />,
       },
       {
-        path: "/experience/:id", // Detail page
+        path: "/experience/:id", 
         element: <ExperienceDetailPage />,
+      },
+      {
+        path: "/booking", // 3. Add the booking route
+        element: <BookingPage />,
       },
     ],
   },
 ]);
 
-// 4. Render the RouterProvider, not <App />
+// 4. Render the RouterProvider
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />

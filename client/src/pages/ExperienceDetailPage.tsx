@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { type ExperienceDetail, type AvailableTime } from '../types'; // Adjust path as needed
+import { useParams, Link, useNavigate } from 'react-router-dom';
+// Make sure this path is correct for your project
+import { type ExperienceDetail, type AvailableTime } from '../types'; 
 
-// A simple utility function to format dates
+// --- Utility Functions ---
+
 // Converts "2025-10-22T00:00:00.000Z" to "Oct 22"
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-// A simple utility function to format time
 // Converts "09:00" to "9:00 AM"
 const formatTime = (timeString: string): string => {
   const [hours, minutes] = timeString.split(':');
@@ -20,8 +21,9 @@ const formatTime = (timeString: string): string => {
 
 
 // --- The Main Component ---
+
 const ExperienceDetailPage: React.FC = () => {
-  // State for the component
+  // --- State ---
   const [experience, setExperience] = useState<ExperienceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +33,17 @@ const ExperienceDetailPage: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
-  // Get the 'id' from the URL, e.g., /experience/6901e5ec...
+  // --- Hooks ---
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate(); // For navigation
 
-  // Fetch data when the component mounts or 'id' changes
+  // --- Data Fetching ---
   useEffect(() => {
-    if (!id) return; // Don't fetch if there's no ID
+    if (!id) {
+      setError("No experience ID provided.");
+      setIsLoading(false);
+      return;
+    }
 
     const fetchExperienceDetail = async () => {
       setIsLoading(true);
@@ -47,7 +54,7 @@ const ExperienceDetailPage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ id: id }), // Use the dynamic ID from the URL
+          body: JSON.stringify({ id: id }),
         });
 
         if (!response.ok) {
@@ -58,6 +65,10 @@ const ExperienceDetailPage: React.FC = () => {
 
         if (result.success && result.data) {
           setExperience(result.data);
+          // Auto-select first date if available
+          if (result.data.availableDates && result.data.availableDates.length > 0) {
+            setSelectedDate(result.data.availableDates[0]);
+          }
         } else {
           throw new Error(result.message || 'Failed to fetch experience data');
         }
@@ -76,13 +87,12 @@ const ExperienceDetailPage: React.FC = () => {
     fetchExperienceDetail();
   }, [id]);
 
-  // --- Helper Functions for Rendering ---
+  // --- Helper Functions ---
 
   const renderTimeSlot = (timeSlot: AvailableTime) => {
     const isSelected = selectedTime === timeSlot.time;
     const isSoldOut = timeSlot.soldOut;
 
-    // Determine button classes
     let buttonClasses = "border rounded-md px-3 py-2 text-sm text-center transition-colors ";
     if (isSoldOut) {
       buttonClasses += "bg-gray-100 text-gray-400 cursor-not-allowed line-through";
@@ -126,12 +136,32 @@ const ExperienceDetailPage: React.FC = () => {
   const total = subtotal + taxes;
   const canConfirm = selectedDate && selectedTime;
 
+  // --- Event Handler ---
+  const handleConfirm = () => {
+    if (!canConfirm || !experience || !selectedDate || !selectedTime) return;
+
+    // This is the data we'll pass to the booking page
+    const bookingDetails = {
+      experienceId: experience._id,
+      experienceTitle: experience.title,
+      date: selectedDate,
+      time: selectedTime,
+      quantity: quantity,
+      subtotal: subtotal,
+      taxes: taxes,
+      total: total,
+    };
+    
+    // Navigate to the booking page with state
+    navigate('/booking', { state: { bookingDetails } });
+  };
+
   // --- Main Render ---
   return (
     <div className="max-w-7xl mx-auto p-4 lg:p-8">
       {/* Back Button */}
       <Link 
-        to="/" // Links back to the homepage (or your list page)
+        to="/" // Links back to the homepage
         className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 mb-4"
       >
         &lt; Details
@@ -157,13 +187,14 @@ const ExperienceDetailPage: React.FC = () => {
             <h2 className="text-xl font-semibold">Choose date</h2>
             <div className="flex flex-wrap gap-3">
               {experience.availableDates.length > 0 ? (
-                experience.availableDates.map((date:any) => (
+                experience.availableDates.map((date) => (
                   <button
                     key={date}
                     onClick={() => setSelectedDate(date)}
                     className={`border rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                       selectedDate === date
                         ? 'bg-yellow-500 border-yellow-500'
+                        // Faded for non-selected
                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                     }`}
                   >
@@ -183,9 +214,7 @@ const ExperienceDetailPage: React.FC = () => {
               {experience.availableTimes.length > 0 ? (
                 experience.availableTimes.map(renderTimeSlot)
               ) : (
-                <p className="text-sm text-gray-500">Please select a date to see times.</p>
-                // Note: Your schema implies times aren't tied to dates.
-                // If they are, the API fetch logic would need to change.
+                <p className="text-sm text-gray-500">No times available for this experience.</p>
               )}
             </div>
             <p className="text-xs text-gray-500">All times are in IST (GMT +5:30)</p>
@@ -256,6 +285,7 @@ const ExperienceDetailPage: React.FC = () => {
 
               {/* Confirm Button */}
               <button
+                onClick={handleConfirm}
                 className={`w-full px-6 py-3 text-lg font-semibold rounded-md transition-colors ${
                   canConfirm
                     ? 'bg-gray-800 text-white hover:bg-gray-900'
