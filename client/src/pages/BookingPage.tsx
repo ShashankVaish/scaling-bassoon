@@ -31,6 +31,29 @@ interface BookingPayload {
   total: number;
 }
 
+// --- NEW: Types for your API Response ---
+interface BookingData {
+  // ... all the fields from the 'data' object
+  _id: string;
+  fullName: string;
+  email: string;
+  status: string;
+}
+
+interface BookingIdResponse {
+  bookingId: string; // The string ID we want to display
+  email: string;
+  _id: string;
+}
+
+interface FullApiResponse {
+  success: boolean;
+  message: string;
+  data: BookingData;
+  BookingId: BookingIdResponse; // Matches your API response
+}
+// ---
+
 // Type for the location state
 interface LocationState {
   bookingDetails: BookingDetails;
@@ -54,6 +77,9 @@ const BookingPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  
+  // --- FIX #1: Store the ID string, not the whole object ---
+  const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
 
   // If user lands here directly without data, redirect to homepage
   if (!bookingDetails) {
@@ -85,7 +111,8 @@ const BookingPage: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
+      // We give the result our new type
+      const result: FullApiResponse = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || 'Booking failed. Please try again.');
@@ -93,9 +120,10 @@ const BookingPage: React.FC = () => {
 
       // Handle success!
       setBookingSuccess(true);
-      // Optional: Redirect after a delay
-      // setTimeout(() => navigate('/profile/bookings'), 3000);
-
+      
+      // --- FIX #2: Drill down to get the *string* ---
+      setConfirmedBookingId(result.BookingId.bookingId);
+      
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -107,13 +135,21 @@ const BookingPage: React.FC = () => {
     }
   };
 
+
   // Show a success message
   if (bookingSuccess) {
     return (
       <div className="max-w-md mx-auto text-center p-8 bg-white shadow-lg rounded-lg">
         <h2 className="text-3xl font-bold text-green-600 mb-4">Booking Confirmed!</h2>
+        
+        {/* --- FIX #3: Render the state string, which is no longer an object --- */}
+        <h3 className="text-xl font-bold text-gray-800 mb-4">
+          Booking ID: {confirmedBookingId}
+        </h3>
+
         <p className="text-lg text-gray-700">Thank you, {fullName}.</p>
         <p className="text-gray-600 mt-2">A confirmation email has been sent to {email}.</p>
+        
         <button
           onClick={() => navigate('/')}
           className="mt-6 w-full px-6 py-3 text-lg font-semibold rounded-md bg-gray-800 text-white hover:bg-gray-900"
@@ -240,7 +276,7 @@ const BookingPage: React.FC = () => {
             </div>
             <div className="flex justify-between text-xl font-bold">
               <span className="text-gray-900">Total:</span>
-              <span className="text-gray-900">₹{bookingDetails.total}</span>
+              <span className="font-medium text-gray-900">₹{bookingDetails.total}</span>
             </div>
           </div>
         </div>
