@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 // Make sure this path is correct for your project
 import { type ExperienceDetail, type AvailableTime } from '../types'; 
-
+const API_URL = import.meta.env.VITE_BACKEND_API_URL;
 // --- Utility Functions ---
 
 // Converts "2025-10-22T00:00:00.000Z" to "Oct 22"
@@ -49,7 +49,7 @@ const ExperienceDetailPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('http://localhost:3000/api/get-experince-detail', {
+        const response = await fetch(`${API_URL}/get-experince-detail`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

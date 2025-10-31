@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import ExperienceCard, { type Experience } from "../components/ExperienceCard";
 import { Link } from "react-router-dom";
-
+const API_URL = import.meta.env.VITE_BACKEND_API_URL;
 const ExperiencePage: React.FC = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -15,7 +15,7 @@ const ExperiencePage: React.FC = () => {
   useEffect(() => {
     const fetchExperiences = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/get-experince");
+        const res = await fetch(`${API_URL}/get-experince`);
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

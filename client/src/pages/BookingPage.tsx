@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useLocation, Navigate, useNavigate } from 'react-router-dom';
-
+const API_URL = import.meta.env.VITE_BACKEND_API_URL;
 // --- Type Definitions ---
 
 // Data we expect to RECEIVE from the detail page
@@ -105,23 +105,23 @@ const BookingPage: React.FC = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:3000/api/booking', {
+      const response = await fetch(`${API_URL}/booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      // We give the result our new type
+      
       const result: FullApiResponse = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || 'Booking failed. Please try again.');
       }
 
-      // Handle success!
+
       setBookingSuccess(true);
       
-      // --- FIX #2: Drill down to get the *string* ---
+    
       setConfirmedBookingId(result.BookingId.bookingId);
       
     } catch (err) {
