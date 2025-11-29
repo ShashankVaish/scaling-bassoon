@@ -1,10 +1,10 @@
-import React from 'react';
+// import React from 'react';
 
 const Header = () => {
   return (
     <header className="flex justify-between items-center p-4 bg-white border-b border-gray-200">
       <div className="logo-container">
-        <span className="text-2xl font-bold text-gray-800">no highway delite</span>
+        <span className="text-2xl font-bold text-gray-800" > highway delite</span>
       </div>
       <div className="search-container flex items-center">
         <input
